@@ -7,6 +7,7 @@ import { EngineService } from "./services/engine.service";
   styleUrls: ["./engine.component.scss"],
 })
 export class EngineComponent implements OnInit {
+  // Gives our JavaScript a reference to the canvas DOM element.
   @ViewChild("renderCanvas", { static: true })
   public renderCanvas: ElementRef<HTMLCanvasElement>;
 
@@ -14,5 +15,6 @@ export class EngineComponent implements OnInit {
 
   ngOnInit() {
     this.engServ.createScene(this.renderCanvas);
+    this.engServ.animate();
   }
 }
