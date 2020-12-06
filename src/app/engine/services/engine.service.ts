@@ -1,4 +1,5 @@
-import { Injectable } from "@angular/core";
+import { ElementRef, Injectable } from "@angular/core";
+import * as BABYLON from "babylonjs";
 
 @Injectable({
   providedIn: "root",
@@ -7,9 +8,9 @@ export class EngineService {
   constructor() {}
 
   /**
-   * sayHi
+   * createScene
    */
-  public sayHi() {
-    alert("Hi!");
+  public createScene(canvas: ElementRef<HTMLCanvasElement>) {
+    console.log("createScene", canvas);
   }
 }
