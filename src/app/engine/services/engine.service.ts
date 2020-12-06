@@ -5,12 +5,14 @@ import * as BABYLON from "babylonjs";
   providedIn: "root",
 })
 export class EngineService {
+  private canvas: HTMLCanvasElement;
   constructor() {}
 
   /**
    * createScene
    */
   public createScene(canvas: ElementRef<HTMLCanvasElement>) {
-    console.log("createScene", canvas);
+    this.canvas = canvas.nativeElement;
+    console.log("createScene", this.canvas);
   }
 }
