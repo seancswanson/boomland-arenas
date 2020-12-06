@@ -14,6 +14,9 @@ import {
   Texture,
   DynamicTexture,
   Camera,
+  ArcRotateCamera,
+  FreeCameraMouseInput,
+  ArcRotateCameraPointersInput,
 } from "babylonjs";
 import "babylonjs-materials";
 
@@ -23,11 +26,15 @@ import "babylonjs-materials";
 export class EngineService {
   private canvas: HTMLCanvasElement;
   private engine: Engine;
-  private camera: FreeCamera;
+  private camera: ArcRotateCamera;
   private scene: Scene;
   private light: Light;
 
   private sphere: Mesh;
+  private ground: Mesh;
+  distance: number;
+  aspect: number;
+  rot_state: { x: number; y: number };
 
   public constructor(
     private ngZone: NgZone,
@@ -48,9 +55,24 @@ export class EngineService {
     // Create a basic BJS Scene object
     this.scene = new Scene(this.engine);
     // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
-    this.camera = new FreeCamera("camera1", new Vector3(0, 5, -10), this.scene);
-    // Target the camera to scene origin
-    this.camera.setTarget(Vector3.Zero());
+    this.camera = new ArcRotateCamera(
+      "Camera",
+      0,
+      Math.PI / 6,
+      25,
+      Vector3.Zero(),
+      this.scene
+    );
+
+    this.setCameraRotationRestraints();
+    this.setCameraInputRestraints();
+
+    // Set distance unit.
+    this.distance = 20;
+    // Calculate aspect ration of scene.
+    this.aspect =
+      this.scene.getEngine().getRenderingCanvasClientRect().height /
+      this.scene.getEngine().getRenderingCanvasClientRect().width;
     // Attach the camera to the canvas
     this.camera.attachControl(this.canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
@@ -59,6 +81,8 @@ export class EngineService {
       new Vector3(0, 1, 0),
       this.scene
     );
+    this.light.intensity = 0.7;
+
     // Create a built-in "sphere" shape; its constructor takes 6 params: name, segment, diameter, scene, updatable, sideOrientation
     this.sphere = Mesh.CreateSphere(
       "sphere1",
@@ -68,8 +92,12 @@ export class EngineService {
       false,
       Mesh.FRONTSIDE
     );
-
+    // Move the sphere upward 1/2 of its height
+    this.sphere.position.y = 1;
+    // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
+    this.ground = Mesh.CreateGround("ground1", 6, 6, 2, this.scene, false);
     console.log("createScene", this.canvas, this.engine);
+
     return this.scene;
   }
 
@@ -93,5 +121,28 @@ export class EngineService {
         this.engine.resize();
       });
     });
+  }
+
+  public setCameraRotationRestraints() {
+    // Hold on to the rotation of the camera to use when we register it before render.
+    this.rot_state = { x: this.camera.alpha, y: this.camera.beta };
+
+    // Limit latitudinal (horizontal) panning by keeping the value static on creation.
+    this.camera.upperBetaLimit = this.camera.beta;
+
+    this.scene.registerBeforeRender(() => {
+      if (this.rot_state) {
+        console.log(this.rot_state);
+        this.camera.alpha = this.rot_state.x;
+      }
+    });
+  }
+
+  public setCameraInputRestraints() {
+    // Remove all default inputs.
+    this.camera.inputs.clear();
+
+    // Add back pointer inputs to enable moving the camera with your mouse or finger only.
+    this.camera.inputs.add(new ArcRotateCameraPointersInput());
   }
 }
