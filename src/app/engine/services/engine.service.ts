@@ -18,6 +18,7 @@ import {
   FreeCameraMouseInput,
   ArcRotateCameraPointersInput,
   SceneLoader,
+  MeshBuilder,
 } from "babylonjs";
 import "babylonjs-materials";
 
@@ -33,9 +34,11 @@ export class EngineService {
 
   private sphere: Mesh;
   private ground: Mesh;
-  distance: number;
-  aspect: number;
-  rot_state: { x: number; y: number };
+  private distance: number;
+  private aspect: number;
+  private logo: any;
+  private rot_state: { x: number; y: number };
+  bgBox: Mesh;
 
   public constructor(
     private ngZone: NgZone,
@@ -70,6 +73,7 @@ export class EngineService {
 
     this.setCameraRotationRestraints();
     this.setCameraInputRestraints();
+    this.createUi();
 
     // Set distance unit.
     this.distance = 20;
@@ -78,15 +82,7 @@ export class EngineService {
     this.aspect =
       this.scene.getEngine().getRenderingCanvasClientRect().height /
       this.scene.getEngine().getRenderingCanvasClientRect().width;
-    SceneLoader.ImportMesh(
-      "",
-      "../../assets/",
-      "boomland_logo.babylon",
-      this.scene,
-      (newMeshes) => {
-        console.log(newMeshes);
-      }
-    );
+
     // Attach the camera to the canvas
     this.camera.attachControl(this.canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
@@ -147,7 +143,6 @@ export class EngineService {
 
     this.scene.registerBeforeRender(() => {
       if (this.rot_state) {
-        console.log(this.rot_state);
         this.camera.alpha = this.rot_state.x;
       }
     });
@@ -159,5 +154,28 @@ export class EngineService {
 
     // Add back pointer inputs to enable moving the camera with your mouse or finger only.
     this.camera.inputs.add(new ArcRotateCameraPointersInput());
+  }
+
+  public createUi() {
+    // Splash BG Box
+    this.bgBox = MeshBuilder.CreateBox(
+      "bg-box",
+      { width: 10, height: 0.25, depth: 10 },
+      this.scene
+    );
+    this.bgBox.position.y = 9;
+    // Boomland: Arenas logo
+    SceneLoader.ImportMesh(
+      "",
+      "../../assets/",
+      "boomland_logo.babylon",
+      this.scene,
+      (newMeshes) => {
+        console.log(typeof newMeshes);
+        this.logo = newMeshes[0];
+        this.logo.rotation.y = -Math.PI / 2;
+        this.logo.position.y = 10;
+      }
+    );
   }
 }
