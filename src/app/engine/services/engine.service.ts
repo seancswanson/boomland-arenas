@@ -17,6 +17,7 @@ import {
   ArcRotateCamera,
   FreeCameraMouseInput,
   ArcRotateCameraPointersInput,
+  SceneLoader,
 } from "babylonjs";
 import "babylonjs-materials";
 
@@ -47,13 +48,16 @@ export class EngineService {
   public createScene(canvas: ElementRef<HTMLCanvasElement>) {
     // Get the canvas DOM element
     this.canvas = canvas.nativeElement;
+
     // Load the 3d engine
     this.engine = new Engine(this.canvas, true, {
       preserveDrawingBuffer: true,
       stencil: true,
     });
+
     // Create a basic BJS Scene object
     this.scene = new Scene(this.engine);
+
     // Create a FreeCamera, and set its position to {x: 0, y: 5, z: -10}
     this.camera = new ArcRotateCamera(
       "Camera",
@@ -69,10 +73,20 @@ export class EngineService {
 
     // Set distance unit.
     this.distance = 20;
+
     // Calculate aspect ration of scene.
     this.aspect =
       this.scene.getEngine().getRenderingCanvasClientRect().height /
       this.scene.getEngine().getRenderingCanvasClientRect().width;
+    SceneLoader.ImportMesh(
+      "",
+      "../../assets/",
+      "boomland_logo.babylon",
+      this.scene,
+      (newMeshes) => {
+        console.log(newMeshes);
+      }
+    );
     // Attach the camera to the canvas
     this.camera.attachControl(this.canvas, false);
     // Create a basic light, aiming 0, 1, 0 - meaning, to the sky
@@ -94,6 +108,7 @@ export class EngineService {
     );
     // Move the sphere upward 1/2 of its height
     this.sphere.position.y = 1;
+
     // Create a built-in "ground" shape; its constructor takes 6 params : name, width, height, subdivision, scene, updatable
     this.ground = Mesh.CreateGround("ground1", 6, 6, 2, this.scene, false);
     console.log("createScene", this.canvas, this.engine);
